@@ -19,7 +19,7 @@ navigator.geolocation.getCurrentPosition(pos => {
         renderDecisions: true,
         personalization: {
           surfaces: [
-            "web://avistore.github.io/index.html#offerContainer"
+            "web://iamavig1501.github.io/learning-ajo.github.io/#offerContainer"
           ]
         },
         xdm: {
