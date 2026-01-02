@@ -1,5 +1,5 @@
 
-const apiKey = "02921f56f5e20476dfedbae7b43dfb58";
+/*const apiKey = "02921f56f5e20476dfedbae7b43dfb58";
 
 navigator.geolocation.getCurrentPosition(pos => {
   const lat = pos.coords.latitude;
@@ -172,7 +172,7 @@ function generateUUID() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
-
+*/
 function getECID() {
   try {
     return _satellite.getVar("ECID");
