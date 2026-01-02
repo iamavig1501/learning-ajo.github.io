@@ -142,14 +142,13 @@ navigator.geolocation.getCurrentPosition(pos => {
                       id: id,
                       tokens: [token]
                     },
-                  
-                   
-
                     propositions: window.latestPropositions
                   }
                 }
               }
             });
+
+
           });
         }
       }).catch(err => {
@@ -159,7 +158,53 @@ navigator.geolocation.getCurrentPosition(pos => {
     .catch(error => {
       console.error("Failed to fetch weather data:", error);
     });
+
+    // Send an event to trigger AJO decisioning
+        alloy("sendEvent", {
+          type: "decisioning.propositionFetch",
+          decisionScopes: [
+            "web://iamavig1501.github.io/learning-ajo.github.io#offerCards"
+          ],
+          xdm: {
+            eventType: "ajo.event",
+            web: {
+              webPageDetails: {
+                URL: window.location.href
+              }
+            }
+          }
+        });
+
+        // Listen for propositions returned by AJO
+        alloy("on", "decisioning.propositionDisplay", function (event) {
+          const propositions = event.propositions || [];
+          const container = document.getElementById("offerCards");
+
+          propositions.forEach((prop) => {
+            prop.items.forEach((item) => {
+              if (item.schema === "https://ns.adobe.com/experience/offer-management/content-component-html") {
+                const card = document.createElement("div");
+                card.className = "ajo-content-card";
+                card.innerHTML = item.data.content;
+
+                container.appendChild(card);
+
+                // Notify Adobe that the proposition was displayed
+                alloy("sendEvent", {
+                  type: "decisioning.propositionDisplay",
+                  propositionEventType: {
+                    display: 1
+                  },
+                  propositions: [prop]
+                });
+              }
+            });
+          });
+        });
 });
+
+
+
 
 function decodeHtml(html) {
   const txt = document.createElement("textarea");
@@ -172,6 +217,7 @@ function generateUUID() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+
 function getECID() {
   try {
     return _satellite.getVar("ECID");
