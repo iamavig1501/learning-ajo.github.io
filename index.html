@@ -42,6 +42,14 @@
       margin-top: 1.5rem;
     }
 
+  .ajo-content-card {
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: #fff;
+}
+
     .offer {
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -84,10 +92,10 @@
   <div class="container">
     <div id="weatherStatus">Detecting weather...</div>
 
-    <div id="offerContainer" >
+    <div id="offerContainer">
       <!-- Offers will be injected here -->
     </div>
-    <div id="offerCards" >
+    <div id="offerCards">
       <!-- Offers will be injected here -->
     </div>
     <div id="offerWebChannel" >
@@ -101,7 +109,53 @@
     <p>© 2025 FinWise Personalization. All rights reserved.</p>
   </footer>
 
- <script src="scripts/capture-display-and-click-events.js"></script>
+  <script>
+    // Send an event to trigger AJO decisioning
+    alloy("sendEvent", {
+      type: "decisioning.propositionFetch",
+      decisionScopes: [
+        "web://iamavig1501.github.io/learning-ajo.github.io#offerCards"
+      ],
+      xdm: {
+        eventType: "ajo.event",
+        web: {
+          webPageDetails: {
+            URL: window.location.href
+          }
+        }
+      }
+    });
+
+    // Listen for propositions returned by AJO
+    alloy("on", "decisioning.propositionDisplay", function (event) {
+      const propositions = event.propositions || [];
+      const container = document.getElementById("offerCards");
+
+      propositions.forEach((prop) => {
+        prop.items.forEach((item) => {
+          if (item.schema === "https://ns.adobe.com/experience/offer-management/content-component-html") {
+            const card = document.createElement("div");
+            card.className = "ajo-content-card";
+            card.innerHTML = item.data.content;
+
+            container.appendChild(card);
+
+            // Notify Adobe that the proposition was displayed
+            alloy("sendEvent", {
+              type: "decisioning.propositionDisplay",
+              propositionEventType: {
+                display: 1
+              },
+              propositions: [prop]
+            });
+          }
+        });
+      });
+    });
+  </script>
+
+
+  <script src="scripts/capture-display-and-click-events.js"></script>
 
 </body>
 </html>
